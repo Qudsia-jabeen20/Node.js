@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Auth Demo</title>
+</head>
+<body>
+  <h1>Auth API Demo</h1>
+
+  <!-- Signup -->
+  <h2>Signup</h2>
+  <input type="text" id="signupName" placeholder="Name"><br>
+  <input type="email" id="signupEmail" placeholder="Email"><br>
+  <input type="password" id="signupPassword" placeholder="Password"><br>
+  <button id="signupBtn">Sign Up</button>
+  <p id="signupResult"></p>
+
+  <!-- Login -->
+  <h2>Login</h2>
+  <input type="email" id="loginEmail" placeholder="Email"><br>
+  <input type="password" id="loginPassword" placeholder="Password"><br>
+  <button id="loginBtn">Login</button>
+  <p id="loginResult"></p>
+
+  <!-- Forgot Password -->
+  <h2>Forgot Password</h2>
+  <input type="email" id="forgotEmail" placeholder="Enter your email"><br>
+  <button id="forgotBtn">Request Reset</button>
+  <p id="forgotResult"></p>
+
+  <!-- Reset Password -->
+  <h2>Reset Password</h2>
+  <input type="text" id="resetToken" placeholder="Paste reset token here"><br>
+  <input type="password" id="newPassword" placeholder="New password"><br>
+  <button id="resetBtn">Reset Password</button>
+  <p id="resetResult"></p>
+
+  <!-- Verify Email -->
+  <h2>Verify Email</h2>
+  <input type="text" id="verifyToken" placeholder="Paste verification token here"><br>
+  <button id="verifyBtn">Verify</button>
+  <p id="verifyResult"></p>
+
+  <script>
+    // --- SIGNUP ---
+    document.getElementById("signupBtn").addEventListener("click", async () => {
+      const name = document.getElementById("signupName").value;
+      const email = document.getElementById("signupEmail").value;
+      const password = document.getElementById("signupPassword").value;
+
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const data = await res.json();
+      document.getElementById("signupResult").textContent =
+        data.message || JSON.stringify(data);
+    });
+
+    // --- LOGIN ---
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      document.getElementById("loginResult").textContent =
+        data.token ? "Login successful! Token: " + data.token : (data.message || JSON.stringify(data));
+    });
+
+    // --- FORGOT PASSWORD ---
+    document.getElementById("forgotBtn").addEventListener("click", async () => {
+      const email = document.getElementById("forgotEmail").value;
+
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await res.json();
+      document.getElementById("forgotResult").textContent =
+        data.resetToken ? "Reset Token: " + data.resetToken : (data.message || JSON.stringify(data));
+    });
+
+    // --- RESET PASSWORD ---
+    document.getElementById("resetBtn").addEventListener("click", async () => {
+      const token = document.getElementById("resetToken").value;
+      const newPassword = document.getElementById("newPassword").value;
+
+      const res = await fetch("/api/auth/reset-password/" + token, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newPassword })
+      });
+
+      const data = await res.json();
+      document.getElementById("resetResult").textContent =
+        data.message || JSON.stringify(data);
+    });
+
+    // --- VERIFY EMAIL ---
+    document.getElementById("verifyBtn").addEventListener("click", async () => {
+      const token = document.getElementById("verifyToken").value;
+
+      const res = await fetch("/api/auth/verify-email/" + token);
+      const data = await res.json();
+
+      document.getElementById("verifyResult").textContent =
+        data.message || JSON.stringify(data);
+    });
+  </script>
+</body>
+</html>
+
+
