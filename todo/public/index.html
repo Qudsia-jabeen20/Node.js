@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Todo Task App</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+    .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h1 { text-align: center; }
+    input, button { padding: 10px; margin: 5px 0; width: 100%; }
+    .task { background: #fafafa; border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 5px; }
+    .task-actions { margin-top: 5px; }
+    button { cursor: pointer; border: none; border-radius: 4px; }
+    .delete-btn { background: #e74c3c; color: white; }
+    .edit-btn { background: #3498db; color: white; margin-right: 5px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Todo Task App</h1>
+
+    <h3>Add Task</h3>
+    <input id="taskTitle" placeholder="Task Title">
+    <input id="taskDesc" placeholder="Task Description">
+    <button onclick="addTask()">Add Task</button>
+
+    <h3>Your Tasks</h3>
+    <div id="tasks"></div>
+  </div>
+
+  <script>
+    const API_URL = "/api/tasks";
+
+    async function fetchTasks() {
+      const res = await fetch(API_URL);
+      const tasks = await res.json();
+      const tasksDiv = document.getElementById("tasks");
+      tasksDiv.innerHTML = "";
+
+      tasks.forEach(task => {
+        const div = document.createElement("div");
+        div.className = "task";
+        div.innerHTML = `
+          <b>${task.title}</b><br>
+          ${task.description || ""}<br>
+          <div class="task-actions">
+            <button class="edit-btn" onclick="editTask('${task.id}', '${task.title}', '${task.description || ""}')">Edit</button>
+            <button class="delete-btn" onclick="deleteTask('${task.id}')">Delete</button>
+          </div>
+        `;
+        tasksDiv.appendChild(div);
+      });
+    }
+
+    async function addTask() {
+      const title = document.getElementById("taskTitle").value;
+      const description = document.getElementById("taskDesc").value;
+
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, description })
+      });
+      await res.json();
+      document.getElementById("taskTitle").value = "";
+      document.getElementById("taskDesc").value = "";
+      fetchTasks();
+    }
+
+    async function deleteTask(id) {
+      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      fetchTasks();
+    }
+
+    async function editTask(id, oldTitle, oldDesc) {
+      const newTitle = prompt("Edit title:", oldTitle);
+      const newDesc = prompt("Edit description:", oldDesc);
+
+      if (newTitle !== null && newTitle.trim() !== "") {
+        await fetch(`${API_URL}/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: newTitle, description: newDesc })
+        });
+        fetchTasks();
+      }
+    }
+
+    fetchTasks();
+  </script>
+</body>
+</html>
